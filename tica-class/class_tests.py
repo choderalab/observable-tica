@@ -2,12 +2,14 @@ from class_obs_tica import ObservableTicaObject
 import numpy as np
 from sklearn import decomposition
 
+# HELPER FUNCTIONS
+
 
 def epsilon_close(a, b, epsilon = .00001):
     return True if abs(a-b) < epsilon else False
 
 
-def epsilon_close_mat(a,b, epsilon = .00001):  # easy function that just checks an epsilon closeness of two corresponding elements
+def epsilon_close_mat(a,b, epsilon=.00001):  # easy function that just checks an epsilon closeness of two similar mats
     if np.array(a).shape == np.array(b).shape:
         n = abs(a-b)
         for element in n.flatten():
@@ -17,13 +19,30 @@ def epsilon_close_mat(a,b, epsilon = .00001):  # easy function that just checks 
     return 'the shapes are not the same'
 
 
-def test_fit_kxx_shapes():  # the fit() func tests will be done after I garuntee that all the parts of fit() work first
-    obj = ObservableTicaLObject()
+def setup():
+    X = np.random.randint(2, 100, (4, 100, 40))  # these two lines creates the random vectors to test on
+    Y = np.random.randint(2, 100, (4, 100, 30))
+
+    tica_obj = ObservableTicaObject()  # This chunk sets up the Obs_tICA obj so that we van run the whiten func on it
+    tica_obj.x = X
+    tica_obj.y = Y
+    tica_obj.x_obj = decomposition.PCA(whiten=True)
+    tica_obj.y_obj = decomposition.PCA(whiten=True)
+    tica_obj.x_obj.fit(np.vstack(X))
+    tica_obj.y_obj.fit(np.vstack(Y))
+    return tica_obj
+
+
+# TEST FUNCTIONS
+
+
+def test_fit_kxx_shapes():  # the fit() func tests will be done after I guarantee that all the parts of fit() work first
+    tica_obj = ObservableTicaObject()
     X = np.random.randint(2, 100, (4, 100, 40))
     Y = np.random.randint(2, 100, (4, 100, 30))
-    obj.fit(X,Y)
-    shape = np.array(K_xx).shape
-    shape.all() == shape[0]
+    tica_obj.fit(X, Y)
+    shape = np.array(tica_obj.K_xx).shape
+    return shape.all() == shape[0]
 
 
 def test_fit_svd_shapes():
@@ -50,7 +69,10 @@ def test_whiten_correctness_mean():
     x_avg = x.mean(0)  # finding the averages for x and y, post whitening
     y_avg = y.mean(0)
 
-    return 'Dimensional means of whitened x data are all 0?: '+ str(epsilon_close_mat(x_avg, np.zeros(x_avg.shape))) + '\nDimensional means of whitened y data are all 0?: '+ str(epsilon_close_mat(y_avg, np.zeros(y_avg.shape)))
+    assert epsilon_close_mat(x_avg, np.zeros(x_avg.shape)), "Dimensional mean of whitened X data is not zero vector"
+    assert epsilon_close_mat(y_avg, np.zeros(y_avg.shape)), "Dimensional mean of whitened Y data is not zero vector"
+
+    return "Whitened Data Mean Values Test Passed"
 
 
 def test_whiten_correctness_cov():
@@ -60,8 +82,8 @@ def test_whiten_correctness_cov():
     tica_obj = ObservableTicaObject()  # This chunk sets up the Obs_tICA obj so that we van run the whiten func on it
     tica_obj.x = X
     tica_obj.y = Y
-    tica_obj.x_obj = decomposition.PCA(whiten = True)
-    tica_obj.y_obj = decomposition.PCA(whiten = True)
+    tica_obj.x_obj = decomposition.PCA(whiten=True)
+    tica_obj.y_obj = decomposition.PCA(whiten=True)
     tica_obj.x_obj.fit(np.vstack(X))
     tica_obj.y_obj.fit(np.vstack(Y))
 
@@ -79,8 +101,10 @@ def test_whiten_correctness_cov():
     cov_x = x.T.dot(x)/(n_x-1)  # '-1' for bessel correction
     cov_y = y.T.dot(y)/(n_y-1)
 
-    return 'Cov matrices of X and Y data are identity? ' + str(epsilon_close_mat(cov_x, np.identity(X.shape[-1]))) + ' ' + str(epsilon_close_mat(cov_y, np.identity(Y.shape[-1])))
-    # cov mat should be Identity now
+    assert epsilon_close_mat(cov_x, np.identity(X.shape[-1])), "Cov Mat for whitened X data is NOT identity matrix"
+    assert epsilon_close_mat(cov_y, np.identity(Y.shape[-1])), "Cov Mat for whitened Y data is NOT identity"
+
+    return 'Whitened Data Covariance Test Passed'
 
 
 def test_Kxx_vals():
@@ -99,12 +123,67 @@ def test_Kxx_vals():
     tica_obj.whiten()  # Running the function
     K_xx, K_evals = tica_obj.estimate_koop_xx(tica_obj.x_0, tica_obj.x_tau)
 
-    print ('K_xx square and has the right dimensions? ', K_xx.shape == (X.shape[-1], X.shape[-1]))
-
     M = np.amax(K_evals)
     m = np.amin(K_evals)
 
-    # not sure what i should be returning here, the range that the eigenvalues are in? a bool of them being in (-1, 1]?
+    print('min eigenval: ', m, '\nmax eigenval: ', M)
 
-    def
-print (test_Kxx_vals())
+    assert K_xx.shape == (X.shape[-1], X.shape[-1]), "K_xx is not square or does not have the right dimensions"
+    assert epsilon_close(K_evals[-1], 1), "No eigenvalue with value 1"
+
+    return "K_xx Shape and Eigenvalue Test Passed"
+
+
+def test_Kxx_squared_error():
+    tica_obj = setup()
+    tica_obj.whiten()
+    tica_obj.K_xx_tuple = tica_obj.estimate_koop_xx(tica_obj.x_0, tica_obj.x_tau)
+    error_bound = np.sum((tica_obj.x_tau - tica_obj.x_0)**2)
+    print ('Error upper bound: ', error_bound, '\nResidual Error: ', tica_obj.K_xx_tuple[1][0])
+    assert error_bound > tica_obj.K_xx_tuple[1][0], "Residual error is greater than naive error!"
+
+    return "Koopman Residual Error Test Passed"
+
+
+def test_riccati_average_vals():
+    tica_obj = setup()
+
+    tica_obj.whiten()
+    tica_obj.estimate_koop_xx(tica_obj.x_0, tica_obj.x_tau)
+    tica_obj.estimate_koop_xy(tica_obj.x_0, tica_obj.y_tau)
+
+    tica_obj.riccati()
+    assert epsilon_close_mat(tica_obj.chi_bar, np.zeros(tica_obj.chi_bar.shape)), "Chi_bar is not zero vector."
+    assert epsilon_close_mat(tica_obj.gamma_bar, np.zeros(tica_obj.gamma_bar.shape)), "Gamma_bar is not the zero vector"
+
+    return "Chi_bar/Gamma_bar Test Passed"
+
+
+def test_riccati_equation():
+    tica_obj = setup()
+
+    tica_obj.whiten()
+    tica_obj.estimate_koop_xx(tica_obj.x_0, tica_obj.x_tau)
+    tica_obj.estimate_koop_xy(tica_obj.x_0, tica_obj.y_tau)
+
+    O = tica_obj.riccati()
+
+    assert epsilon_close_mat(O-tica_obj.A.dot(O).dot(tica_obj.A.T), tica_obj.B.dot(tica_obj.B.T)), "Riccati was not solved correctly"
+
+    return "Riccati Correctness Test Passed"
+
+
+def test_trunc_svd():
+    tica_obj = setup()
+
+    tica_obj.whiten()
+    tica_obj.estimate_koop_xx(tica_obj.x_0, tica_obj.x_tau)
+    tica_obj.estimate_koop_xy(tica_obj.x_0, tica_obj.y_tau)
+
+    O = tica_obj.riccati()
+    tica_obj.trunc_SVD(O)
+
+    assert epsilon_close_mat(tica_obj.u, tica_obj.v.T), "The matrices U and V are not transposes"
+    return 'SVD test passed'
+
+print(test_Kxx_vals())
