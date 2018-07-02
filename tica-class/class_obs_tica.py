@@ -1,18 +1,19 @@
-from pyemma import coordinates
-from pyemma.coordinates.estimation.covariance import LaggedCovariance as LC
-import mdtraj as md
 import numpy as np
 from sklearn import decomposition
-from scipy.linalg import solve_discrete_are
 from scipy.linalg import solve_discrete_lyapunov
+import math
 filepath = '/Users/bren/downloads/run17clone3.h5'
 
-class ObservableTicaObject():
-    def __init__(self, lag = 1, epsilon = .0001, n_components = 3):
+
+class ObservableTicaObject:
+    def __init__(self, lag=1, epsilon=.0001, n_components=3, var=.95):
         self.lag = lag
         self.n_components = n_components
+        self.var = var
 
-        self.x  = None
+        self.rand_selection = None
+
+        self.x = None
         self.y = None
 
         self.x_obj = None
@@ -36,6 +37,8 @@ class ObservableTicaObject():
         self.chi_bar = None
         self.gamma_bar = None
 
+        self.A = None
+        self.B = None
         self.O = None
 
         self.u = None
@@ -77,19 +80,47 @@ class ObservableTicaObject():
 
         print('______________________________ \n self.x_transformed', self.x_transformed)
 
-    def fit(self, x, y):
+    def fit(self, x, y, rand_selection=False):
+        self.rand_selection = rand_selection
+
         self.x = x
         self.y = y
-        self.x_obj = decomposition.PCA(whiten = True) if self.x is not None else None
-        self.y_obj = decomposition.PCA(whiten = True) if self.y is not None else None
 
-        self.x_obj.fit(np.vstack(x))
-        self.y_obj.fit(np.vstack(y))
+        self.x_obj = decomposition.PCA(whiten=True, n_components=self.var)
+        self.y_obj = decomposition.PCA(whiten=True, n_components=self.var)
 
+        print((len(x), len(x[0]), len(x[0][0])), (len(y), len(y[0]), len(y[0][0])))
+
+        # This is for implementation of the limited sampling
+
+        # if type(rand_selection) == int:
+        #     idx = np.random.choice(len(x[0]), (1, rand_selection), replace=False)
+        #
+        #     x_rand = []
+        #     for num in idx:
+        #         x_rand.append(x[:, num].tolist())
+        #     x = np.array(x_rand[0])
+        #     self.x = x
+
+        self.x_obj.fit(np.vstack(self.x))
+        self.y_obj.fit(np.vstack(self.y))
+
+        print('Whitening Data')
         self.whiten()
+
+        print('Estimating Koopman Matrices')
+
+        self.x_0 = np.insert(self.x_0, len(self.x_0[0]), 1, axis=1)
+        self.x_tau = np.insert(self.x_tau, len(self.x_tau[0]), 1, axis=1)
+        self.y_tau = np.insert(self.y_tau, len(self.y_tau[0]), 1, axis=1)
+
         self.estimate_koop_xx(self.x_0, self.x_tau)
         self.estimate_koop_xy(self.x_0, self.y_tau)
+
+        print('Solving Riccati')
         self.riccati()
+
+        print('Performing SVD')
         self.trunc_SVD(self.O)
 
         # CHECK SHAPE OF KXX KXY AND O
@@ -97,15 +128,16 @@ class ObservableTicaObject():
 
     def whiten(self):
         rtn = []
+
         try:
-            self.x_whitened = [self.x_obj.transform(row) for row in self.x] # change name of list comprehension unit thin
+            self.x_whitened = [self.x_obj.transform(mat) for mat in self.x]
             self.x_0 = np.vstack([x[: -self.lag] for x in self.x_whitened])
             self.x_tau = np.vstack([x[self.lag:] for x in self.x_whitened])
             rtn.append((self.x_0, self.x_tau))
         except:
             raise ValueError('Need to fit x data first!')
         try:
-            self.y_whitened = [self.y_obj.transform(row) for row in self.y]
+            self.y_whitened = [self.y_obj.transform(traj) for traj in self.y]
             self.y_0 = np.vstack(y[: -self.lag] for y in self.y_whitened)
             self.y_tau = np.vstack(y[self.lag:] for y in self.y_whitened)
             rtn.append((self.y_0, self.y_tau))
@@ -121,6 +153,7 @@ class ObservableTicaObject():
         self.K_xx_tuple = np.linalg.lstsq(x_0, x_tau)
         self.K_xx = self.K_xx_tuple[0]
         self.K_xx_evals = np.linalg.eigvalsh(self.K_xx)
+        print('largest eigenval: ', self.K_xx_evals[-1])
         return self.K_xx, self.K_xx_evals
 
         # CHECK  IF EIGENVALS OF K_XX FALL WITHIN INTERVALS
@@ -130,34 +163,28 @@ class ObservableTicaObject():
     def estimate_koop_xy(self, x_0, y_tau):
         self.K_xy_tuple = np.linalg.lstsq(x_0, y_tau)
         self.K_xy = self.K_xy_tuple[0]
-        self.K_xy_s = np.linalg.svd(self.K_xy, compute_uv = False)
+        self.K_xy_s = np.linalg.svd(self.K_xy, compute_uv=False)
         return self.K_xy, self.K_xy_s
 
     def riccati(self):
-        # print (np.linalg.eigh(self.K_xx))
-        if (1-self.epsilon) <= np.linalg.eigh(self.K_xx)[0][-1] <= 1 + self.epsilon:
-            self.v_x = np.linalg.eigh(self.K_xx)[1][-1]
+        # if (1-self.epsilon) <= np.linalg.eigh(self.K_xx)[0][-1] <= 1 + self.epsilon:
+        #     self.v_x = np.linalg.eigh(self.K_xx)[1][-1]
+
+        self.v_x = np.linalg.eigh(self.K_xx)[1][-1]  # just setting the value of v_x to the largest evals evect
         # else:
         #     raise  # Something bad
         self.chi_bar = np.vstack(self.x_whitened).mean(0)  # are these suppose to uphold K_xx.T(chi_bar) = chi_bar
         self.gamma_bar = np.vstack(self.y_whitened).mean(0)  # and K_xy.T(chi_bar) = gamma_bar
 
-        # print (-self.epsilon <= self.chi_bar.any() <= self.epsilon)
-        #
-        # print (np.array(self.x).shape)
-        # print (self.x)
+        self.chi_bar = np.insert(self.chi_bar, len(self.chi_bar), 1)  # Adding the final element to chi and gamma bar to match shape with Kxx and Kxy
+        self.gamma_bar = np.insert(self.gamma_bar, len(self.gamma_bar), 1)
 
-        # print (self.K_xx,'\n _______________________\n', self.v_x,'\n _______________________\n', self.chi_bar)
-        # print (np.linalg.eigvalsh(self.K_xx))
-
-        A = self.K_xx - np.outer(self.v_x, self.chi_bar)
-        B = self.K_xy - np.outer(self.v_x, self.gamma_bar)
-        Q = np.dot(B, B.T)
-        self.O = solve_discrete_lyapunov(A,Q)
+        self.A = self.K_xx - np.outer(self.v_x, self.chi_bar)
+        self.B = self.K_xy - np.outer(self.v_x, self.gamma_bar)
+        Q = np.dot(self.B, self.B.T)
+        self.O = solve_discrete_lyapunov(self.A,Q)
         return self.O
-
         # CHECK TO SEE IF RICCATI IS BEING SOLVED
-
 
     def trunc_SVD(self, O):
         self.u, self.s, self.v = np.linalg.svd(O)
@@ -173,70 +200,70 @@ class ObservableTicaObject():
         self.fit(x,y)
         return self.transform()
 
+
+def load_aladip():
+
+    from msmbuilder.example_datasets import AlanineDipeptide
+    trajs = AlanineDipeptide().get().trajectories
+
+    from msmbuilder.featurizer import AtomPairsFeaturizer
+    pairs = []
+    for i in range(22):
+        for j in range(i):
+            pairs.append((j,i))
+    X = AtomPairsFeaturizer(pairs).fit_transform(trajs)
+
+    from msmbuilder.featurizer import DihedralFeaturizer
+    Y = DihedralFeaturizer().fit_transform(trajs)
+    return (X,Y)
+
+
+def load_fs():
+
+    from msmbuilder.example_datasets import MinimalFsPeptide
+    trajs = MinimalFsPeptide().get().trajectories
+
+    from msmbuilder.featurizer import AtomPairsFeaturizer
+    pairs = []
+    for i in range(264):
+        for j in range(i):
+            pairs.append((j, i))
+    X = AtomPairsFeaturizer(pairs).fit_transform(trajs)
+
+    from msmbuilder.featurizer import DihedralFeaturizer
+    Y = DihedralFeaturizer().fit_transform(trajs)
+    return (X, Y)
+
+
+def load_met():
+    from msmbuilder.example_datasets import MetEnkephalin
+    trajs = MetEnkephalin().get().trajectories
+
+    from msmbuilder.featurizer import AtomPairsFeaturizer
+    pairs = []
+    for i in range(75):
+        for j in range(i):
+            pairs.append((j,i))
+    X = AtomPairsFeaturizer(pairs).fit_transform(trajs)
+
+    from msmbuilder.featurizer import DihedralFeaturizer
+    Y = DihedralFeaturizer().fit_transform(trajs)
+    return (X,Y)
+
+
 if __name__ == '__main__':
 
-    def load_AlaDip():
-
-        from msmbuilder.example_datasets import AlanineDipeptide
-        trajs = AlanineDipeptide().get().trajectories
-
-        from msmbuilder.featurizer import AtomPairsFeaturizer
-        pairs = []
-        for i in range(22):
-            for j in range(i):
-                pairs.append((j,i))
-        X = AtomPairsFeaturizer(pairs).fit_transform(trajs)
-
-        from msmbuilder.featurizer import DihedralFeaturizer
-        Y = DihedralFeaturizer().fit_transform(trajs)
-        return (X,Y)
-
-    def load_FS():
-
-        from msmbuilder.example_datasets import MinimalFsPeptide
-        trajs = MinimalFsPeptide().get().trajectories
-
-        from msmbuilder.featurizer import AtomPairsFeaturizer
-        pairs = []
-        for i in range(264):
-            for j in range(i):
-                pairs.append((j, i))
-        X = AtomPairsFeaturizer(pairs).fit_transform(trajs)
-
-        from msmbuilder.featurizer import DihedralFeaturizer
-        Y = DihedralFeaturizer().fit_transform(trajs)
-        return (X, Y)
-
-    X,Y = load_AlaDip()
-
-    # import mdtraj as md
-    #
-    # refpdb = md.load('frame0.pdb')
-    # trajectory = md.formats.NetCDFTrajectoryFile(netcdf_filename).read_as_traj(refpdb.topology)
-
-    # print (type(trajectory))
+    X, Y = load_aladip()
 
     lag = 1
 
     print ('\n ___________________________________________ \n')
 
     print (len(X), len(X[0]), len(X[0][0]))
-    # X = np.array([[[1, 2], [3, 4], [5, 6], [7, 8]], [[1, 2], [3, 4], [5, 6], [7, 8]]])
 
-    # X = np.random.randint(1,4,[3,8,3])
-    #
-    # Y = np.random.randint(1,4,[3,8,3])
-    # print (X.shape, Y.shape)
-    mol = ObservableTicaObject(lag = lag)
+    mol = ObservableTicaObject(lag=lag)
     mol.fit(X, Y)
     t = mol.transform()
-    print (type(mol.K_xx))
-    # print (np.array(AlaDip.K_xx).shape)
-    print (np.linalg.norm(mol.chi_bar))
-    print (np.mean(mol.chi_bar))
-    # print (AlaDip.K_xx.dot(AlaDip.x_0.T).T-AlaDip.x_tau)
-    # print (np.array(AlaDip.x_0).shape)
-    # print (len(AlaDip.x_whitened), len(AlaDip.x_whitened[0]), len(AlaDip.x_whitened[0][0]))
-    # AlaDip.printall()
-    # print (len(X),len(X[0]), len(X[0][0]))
-    # print (np.array(X).shape)
+
+    print('\n ___________________________________________ \n')
+    print('\n \n')
