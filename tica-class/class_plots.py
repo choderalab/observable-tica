@@ -35,7 +35,9 @@ X_trans = mol.transform()[:, 0:3]
 
 
 ax = plt.subplot(111)
-plt.scatter(X_trans[:,0], X_trans[:,1], c=range(len(X_trans[:, 0])), cmap=cm.rainbow, s=0.3, alpha=0.5)
+# plt.scatter(X_trans[:,0], X_trans[:,1], c=range(len(X_trans[:, 0])), cmap=cm.GnBu, s=0.3, alpha=0.5)
+plt.scatter(X_trans[:,0], X_trans[:,1], s=0.3, alpha=0.5)
+
 plt.xlabel('observable tIC 0')
 plt.ylabel('observable tIC 1')
 ax.spines['right'].set_visible(False)

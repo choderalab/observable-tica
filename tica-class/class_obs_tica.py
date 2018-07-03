@@ -6,6 +6,19 @@ filepath = '/Users/bren/downloads/run17clone3.h5'
 
 
 class ObservableTicaObject:
+    """
+    Attributes:
+    -----------
+    lag : int
+        desired time lag for the tICA process
+    epsilon: float in [0,1]
+        used for "close" calculations
+    n_components: int
+        number of components to be returned for truncated SVD
+    var: float in [0, 1]
+        Minimum amount of variance that you want to be explained by a chosen number of components (for sklearn.decomposition.PCA)
+
+    """
     def __init__(self, lag=1, epsilon=.0001, n_components=3, var=.95):
         self.lag = lag
         self.n_components = n_components
@@ -192,7 +205,7 @@ class ObservableTicaObject:
 
     def transform(self):
         self.x_transformed = np.dot(self.x_0, self.u)
-        return self.x_transformed
+        return self.x_transformed[:, self.n_components]
         # CHECK SHAPE
         # CHECK COMPARISON BETWEEN THIS AND TICA ON X AND TICA ON Y
 
