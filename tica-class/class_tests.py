@@ -108,7 +108,7 @@ def test_whiten_correctness_cov():
 
 
 def test_Kxx_vals():
-    X = np.random.randint(2, 100, (4, 100, 40))  # these two lines creates the random vectors to test on
+    X = np.random.randint(2, 100, (4, 100, 4))  # these two lines creates the random vectors to test on
     Y = np.random.randint(2, 100, (4, 100, 30))
 
     tica_obj = ObservableTicaObject()  # This chunk sets up the Obs_tICA obj so that we van run the whiten func on it
@@ -128,6 +128,22 @@ def test_Kxx_vals():
 
     print('min eigenval: ', m, '\nmax eigenval: ', M)
 
+    # The following line may not be semantically right
+
+    assert -1 < m < M <= 1, 'Eigenvalues do not fall in the correct interval, try increasing the p fraction'
+
+    c_0 =tica_obj.x_0.T.dot(tica_obj.x_0)
+    c_tau = tica_obj.x_0.T.dot(tica_obj.x_tau)
+
+    koop = np.linalg.inv(c_0).dot(c_tau)
+    print (epsilon_close_mat(koop, K_xx))
+    print (np.amin(koop), np.amax(koop))
+    print ('sum.T', koop.T.sum(0))
+    print('sum', koop.sum(0))
+    print('det, c_0', np.linalg.det(c_0))
+    print (np.linalg.eigvalsh(c_0))
+    print('det, c_tau', np.linalg.det(c_tau))
+    print ('det', np.linalg.det(koop))
     assert K_xx.shape == (X.shape[-1], X.shape[-1]), "K_xx is not square or does not have the right dimensions"
     assert epsilon_close(K_evals[-1], 1), "No eigenvalue with value 1"
 
@@ -186,4 +202,4 @@ def test_trunc_svd():
     assert epsilon_close_mat(tica_obj.u, tica_obj.v.T), "The matrices U and V are not transposes"
     return 'SVD test passed'
 
-print(test_Kxx_vals())
+print(test_whiten_correctness_cov(), test_whiten_correctness_mean())
