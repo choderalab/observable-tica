@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ef3a0a42-b740-4294-b780-b7a34cd55443" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/noteboooks/reg-tica-comparison.ipynb" afterPath="$PROJECT_DIR$/noteboooks/reg-tica-comparison.ipynb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tica-class/class_obs_tica.py" afterPath="$PROJECT_DIR$/tica-class/class_obs_tica.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tica-class/class_plots.py" afterPath="$PROJECT_DIR$/tica-class/class_plots.py" />
     </list>
     <ignored path="observable-tica.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -16,7 +17,7 @@
   </component>
   <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/observable-tica$Plot.coverage" NAME="Plot Coverage Results" MODIFIED="1530570152769" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tica-class" />
+    <SUITE FILE_PATH="coverage/observable-tica$Plot.coverage" NAME="Plot Coverage Results" MODIFIED="1530642668310" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tica-class" />
     <SUITE FILE_PATH="coverage/observable-tica$Observable_Tica_Class.coverage" NAME="Observable Tica Class Coverage Results" MODIFIED="1530201619837" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tica-class" />
     <SUITE FILE_PATH="coverage/observable-tica$Class_Tests.coverage" NAME="Class Tests Coverage Results" MODIFIED="1530559533583" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tica-class" />
   </component>
@@ -29,29 +30,30 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="class_plots.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="class_plots.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tica-class/class_plots.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-475">
-              <caret line="10" column="17" selection-start-line="10" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
-              <folding />
+            <state relative-caret-position="1904">
+              <caret line="119" column="17" selection-start-line="119" selection-start-column="17" selection-end-line="119" selection-end-column="17" />
+              <folding>
+                <element signature="e#0#47#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="class_obs_tica.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="class_obs_tica.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tica-class/class_obs_tica.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1558">
-              <caret line="95" column="46" selection-start-line="95" selection-start-column="46" selection-end-line="95" selection-end-column="46" />
+            <state relative-caret-position="267">
+              <caret line="223" column="0" selection-start-line="223" selection-start-column="0" selection-end-line="223" selection-end-column="0" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
                 <element signature="e#687#1545#0" expanded="false" />
-                <element signature="e#1579#3270#0" expanded="false" />
-                <element signature="e#7871#8315#0" expanded="false" />
-                <element signature="e#8338#8785#0" expanded="false" />
-                <element signature="e#8808#9246#0" expanded="false" />
-                <element signature="e#9281#9590#0" expanded="false" />
+                <element signature="e#1579#3435#0" expanded="false" />
+                <element signature="e#8482#8929#0" expanded="false" />
+                <element signature="e#8952#9390#0" expanded="false" />
+                <element signature="e#9425#9734#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -503,7 +505,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="160">
           <caret line="20" column="22" selection-start-line="20" selection-start-column="22" selection-end-line="20" selection-end-column="22" />
-          <folding />
+          <folding>
+            <element signature="e#0#47#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -514,11 +518,10 @@
           <folding>
             <element signature="e#0#18#0" expanded="true" />
             <element signature="e#687#1545#0" expanded="false" />
-            <element signature="e#1579#3270#0" expanded="false" />
-            <element signature="e#7871#8315#0" expanded="false" />
-            <element signature="e#8338#8785#0" expanded="false" />
-            <element signature="e#8808#9246#0" expanded="false" />
-            <element signature="e#9281#9590#0" expanded="false" />
+            <element signature="e#1579#3435#0" expanded="false" />
+            <element signature="e#8482#8929#0" expanded="false" />
+            <element signature="e#8952#9390#0" expanded="false" />
+            <element signature="e#9425#9734#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -541,7 +544,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="736">
           <caret line="56" column="20" selection-start-line="56" selection-start-column="20" selection-end-line="56" selection-end-column="20" />
-          <folding />
+          <folding>
+            <element signature="e#0#47#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -552,11 +557,10 @@
           <folding>
             <element signature="e#0#18#0" expanded="true" />
             <element signature="e#687#1545#0" expanded="false" />
-            <element signature="e#1579#3270#0" expanded="false" />
-            <element signature="e#7871#8315#0" expanded="false" />
-            <element signature="e#8338#8785#0" expanded="false" />
-            <element signature="e#8808#9246#0" expanded="false" />
-            <element signature="e#9281#9590#0" expanded="false" />
+            <element signature="e#1579#3435#0" expanded="false" />
+            <element signature="e#8482#8929#0" expanded="false" />
+            <element signature="e#8952#9390#0" expanded="false" />
+            <element signature="e#9425#9734#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -621,6 +625,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="195">
           <caret line="41" column="0" selection-start-line="41" selection-start-column="0" selection-end-line="41" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -643,6 +648,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="215">
           <caret line="132" column="0" selection-start-line="132" selection-start-column="0" selection-end-line="132" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -660,27 +666,28 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tica-class/class_obs_tica.py">
+    <entry file="file://$PROJECT_DIR$/tica-class/class_plots.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1558">
-          <caret line="95" column="46" selection-start-line="95" selection-start-column="46" selection-end-line="95" selection-end-column="46" />
+        <state relative-caret-position="1904">
+          <caret line="119" column="17" selection-start-line="119" selection-start-column="17" selection-end-line="119" selection-end-column="17" />
           <folding>
-            <element signature="e#0#18#0" expanded="true" />
-            <element signature="e#687#1545#0" expanded="false" />
-            <element signature="e#1579#3270#0" expanded="false" />
-            <element signature="e#7871#8315#0" expanded="false" />
-            <element signature="e#8338#8785#0" expanded="false" />
-            <element signature="e#8808#9246#0" expanded="false" />
-            <element signature="e#9281#9590#0" expanded="false" />
+            <element signature="e#0#47#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tica-class/class_plots.py">
+    <entry file="file://$PROJECT_DIR$/tica-class/class_obs_tica.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-475">
-          <caret line="10" column="17" selection-start-line="10" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
-          <folding />
+        <state relative-caret-position="267">
+          <caret line="223" column="0" selection-start-line="223" selection-start-column="0" selection-end-line="223" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#687#1545#0" expanded="false" />
+            <element signature="e#1579#3435#0" expanded="false" />
+            <element signature="e#8482#8929#0" expanded="false" />
+            <element signature="e#8952#9390#0" expanded="false" />
+            <element signature="e#9425#9734#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
