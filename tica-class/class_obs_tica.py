@@ -137,10 +137,14 @@ class ObservableTicaObject:
         self.estimate_koop_xy(self.x_0, self.y_tau)
 
         print('Solving Riccati')
-        self.riccati()
+        o = self.riccati()
+        print(o.shape)
 
         print('Performing SVD')
         self.trunc_SVD(self.O)
+
+        # print(np.linalg.eigh(o)[1][-1].shape)
+        print (np.corrcoef(np.linalg.eigh(self.O)[1][-1], self.u[0]))
 
         # CHECK SHAPE OF KXX KXY AND O
         # TRUNCATED SHAPE OF V,S,U

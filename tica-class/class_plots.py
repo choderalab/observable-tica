@@ -9,6 +9,7 @@ import math
 import numpy as np
 from matplotlib import cm
 
+
 def plot_by_traj(og_data, x_transformed, y_transformed, save=False):
 
     """
@@ -71,7 +72,7 @@ r = math.floor(len(X[0][0])/10)
 
 mol.fit(X, Y)
 X_trans = mol.transform()[:, 0:3]
-plot_by_traj(X, X_trans[:, 0], X_trans[:, 1])
+# plot_by_traj(X, X_trans[:, 0], X_trans[:, 1])
 
 
 # # print(np.amin(X_trans[:,0]), np.amax(X_trans[:, 0]))
