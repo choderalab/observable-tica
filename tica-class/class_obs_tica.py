@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn import decomposition
 from scipy.linalg import solve_discrete_lyapunov
+import mdtraj as md
 import math
 filepath = '/Users/bren/downloads/run17clone3.h5'
 
@@ -19,7 +20,7 @@ class ObservableTicaObject:
         Minimum amount of variance that you want to be explained by a chosen number of components (for sklearn.decomposition.PCA)
 
     """
-    def __init__(self, lag=1, epsilon=.0001, n_components=3, var=.95):
+    def __init__(self, lag=1, epsilon=.0001, n_components=3, var=.97):
         self.lag = lag
         self.n_components = n_components
         self.var = var
@@ -33,6 +34,8 @@ class ObservableTicaObject:
         self.x_whitened = None
         self.x_0 = None
         self.x_tau = None
+
+        self.x_to_project = None
 
         self.y_obj = None
         self.y_whitened = None
@@ -99,16 +102,29 @@ class ObservableTicaObject:
 
         print('______________________________ \n self.x_transformed', self.x_transformed)
 
+    def check_data_dimension(self, x, y, n_dims=500):
+        if len(x[0][0]) >= n_dims:
+            print('Number of dimensions of X is too high')
+            x_new = reduce_dimension_size(x, n_dims)
+        else:
+            x_new = x
+        if len(y[0][0]) >= n_dims:
+            print('Number of dimensions of Y is too high')
+            y_new = reduce_dimension_size(y, n_dims)
+        else:
+            y_new = y
+        return x_new, y_new
+
     def fit(self, x, y, rand_selection=False):
         self.rand_selection = rand_selection
 
-        self.x = x
-        self.y = y
+        self.x, self.y = self.check_data_dimension(x, y, 500)  # Checking that dim(x), dim(y) <= 500, will adjust if need be
 
         self.x_obj = decomposition.PCA(whiten=True, n_components=self.var)
         self.y_obj = decomposition.PCA(whiten=True, n_components=self.var)
 
-        print((len(x), len(x[0]), len(x[0][0])), (len(y), len(y[0]), len(y[0][0])))
+        print('X dims: ', (len(self.x), len(self.x[0]), len(self.x[0][0])))
+        print('Y dims: ', (len(self.y), len(self.y[0]), len(self.y[0][0])))
 
         # This is for implementation of the limited sampling
 
@@ -121,6 +137,7 @@ class ObservableTicaObject:
         #     x = np.array(x_rand[0])
         #     self.x = x
 
+        print('Fitting data to object pre-whitening')
         self.x_obj.fit(np.vstack(self.x))
         self.y_obj.fit(np.vstack(self.y))
 
@@ -128,11 +145,10 @@ class ObservableTicaObject:
         self.whiten()
 
         print('Estimating Koopman Matrices')
-
         self.x_0 = np.insert(self.x_0, len(self.x_0[0]), 1, axis=1)
         self.x_tau = np.insert(self.x_tau, len(self.x_tau[0]), 1, axis=1)
+        self.x_to_project = np.insert(np.vstack(self.x_whitened), len(self.x_whitened[0][0]), 1, axis=1)
         self.y_tau = np.insert(self.y_tau, len(self.y_tau[0]), 1, axis=1)
-
         self.estimate_koop_xx(self.x_0, self.x_tau)
         self.estimate_koop_xy(self.x_0, self.y_tau)
 
@@ -143,15 +159,13 @@ class ObservableTicaObject:
         print('Performing SVD')
         self.trunc_SVD(self.O)
 
-        # print(np.linalg.eigh(o)[1][-1].shape)
-        print (np.corrcoef(np.linalg.eigh(self.O)[1][-1], self.u[0]))
+        print('Done.')
 
         # CHECK SHAPE OF KXX KXY AND O
         # TRUNCATED SHAPE OF V,S,U
 
     def whiten(self):
         rtn = []
-
         try:
             self.x_whitened = [self.x_obj.transform(mat) for mat in self.x]
             self.x_0 = np.vstack([x[: -self.lag] for x in self.x_whitened])
@@ -214,15 +228,20 @@ class ObservableTicaObject:
         # TRUNCATE, TEST FOR U,S,V SHAPES, TEST FOR U == V.T
 
     def transform(self):
-        self.x_transformed = np.dot(self.x_0, self.u)
+        self.x_transformed = np.dot(np.vstack(self.x_to_project), self.u)
         return self.x_transformed
         # CHECK SHAPE
         # CHECK COMPARISON BETWEEN THIS AND TICA ON X AND TICA ON Y
 
-    def fit_transform(self, x,y):
+    def fit_transform(self, x, y):
         self.fit(x,y)
-        return self.transform()
+        return self.transform()[:, range(self.n_components)]
 
+
+def reduce_dimension_size(data, n_dims=500):  # this is messy code :(
+    rand_dims = np.random.choice(len(data[0][0]), (n_dims), replace=False)
+    a = np.array([traj[:, rand_dims] for traj in data])
+    return a
 
 
 def load_aladip():
@@ -239,7 +258,7 @@ def load_aladip():
 
     from msmbuilder.featurizer import DihedralFeaturizer
     Y = DihedralFeaturizer().fit_transform(trajs)
-    return (X,Y)
+    return X, Y
 
 
 def load_fs():
@@ -256,11 +275,12 @@ def load_fs():
 
     from msmbuilder.featurizer import DihedralFeaturizer
     Y = DihedralFeaturizer().fit_transform(trajs)
-    return (X, Y)
+    return X, Y
 
 
 def load_met():
     from msmbuilder.example_datasets import MetEnkephalin
+    print(type(MetEnkephalin))
     trajs = MetEnkephalin().get().trajectories
 
     from msmbuilder.featurizer import AtomPairsFeaturizer
@@ -272,18 +292,27 @@ def load_met():
 
     from msmbuilder.featurizer import DihedralFeaturizer
     Y = DihedralFeaturizer().fit_transform(trajs)
-    return (X,Y)
+    return X, Y
+
+
+def load_ddr1():
+
+    filepath = '/Users/bren/desktop/msk/sonya-traj/run0-clone0.h5'
+    trajs = md.load(filepath)
+    print(type(trajs))
+
+    return
 
 
 if __name__ == '__main__':
 
-    X, Y = load_aladip()
+    X, Y = load_met()
 
     lag = 1
 
     print ('\n ___________________________________________ \n')
 
-    print (len(X), len(X[0]), len(X[0][0]))
+    print ('X data shape: ', (len(X), len(X[0]), len(X[0][0])))
 
     mol = ObservableTicaObject(lag=lag)
     mol.fit(X, Y)
