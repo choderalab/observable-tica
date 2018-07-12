@@ -35,7 +35,6 @@ def setup():
 
 # TEST FUNCTIONS
 
-
 def test_fit_kxx_shapes():  # the fit() func tests will be done after I guarantee that all the parts of fit() work first
     tica_obj = ObservableTicaObject()
     X = np.random.randint(2, 100, (4, 100, 40))
@@ -202,4 +201,4 @@ def test_trunc_svd():
     assert epsilon_close_mat(tica_obj.u, tica_obj.v.T), "The matrices U and V are not transposes"
     return 'SVD test passed'
 
-print(test_whiten_correctness_cov(), test_whiten_correctness_mean())
+print(test_trunc_svd())

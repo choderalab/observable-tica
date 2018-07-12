@@ -2,6 +2,8 @@ from class_obs_tica import ObservableTicaObject
 from class_obs_tica import load_aladip
 from class_obs_tica import load_met
 from class_obs_tica import load_fs
+from class_obs_tica import load_ddr1
+import mdtraj as md
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -57,65 +59,86 @@ def plot_by_traj(og_data, x_transformed, y_transformed, save=False):
             plt.savefig(label, dpi=300)
 
 
-print('Loading..')
+def plot_all(x,y, save=False):
+    ax = plt.subplot(111)
+    plt.scatter(x, y, c=range(len(x)), cmap=cm.viridis, s=0.3, alpha=0.5)
+    plt.xlabel('observable tIC 0')
+    plt.ylabel('observable tIC 1')
+    plt.colorbar()
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    plt.xticks([-2, 0, 2])
+    plt.yticks([-3, 0, 3])
+    plt.title('projection onto first two observable tICs')
+    if save:
+        plt.savefig('projection_onto_2d.png', dpi=300)
+    plt.show()
+
+
+def plot_all_obs_cmap(x, y, obs):
+    obs = np.vstack(obs)
+    for i in range(len(obs[0])):
+        ax = plt.subplot(111)
+        plt.scatter(x, y, c=obs[:, i], cmap=cm.viridis, s=0.3, alpha=0.5)
+        plt.xlabel('observable tIC 0')
+        plt.ylabel('observable tIC 1')
+        plt.colorbar()
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        plt.xticks([-2, 0, 2])
+        plt.yticks([-3, 0, 3])
+        plt.title('projection onto first two observable tICs')
+        plt.show()
+
+
+
+def plot_3d(x,y,z, save=False):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    ax.scatter(x, y, z, c=range(len(X_trans[:, 0])), s=.2, cmap=cm.viridis,
+               alpha=.5)
+
+    ax.set_xlabel('observable tIC0')
+    ax.set_ylabel('observable tIC1')
+    ax.set_zlabel('observable tIC2')
+    if save:
+        ax.savefig('projection_onto_3d.png', dpi=300)
+    plt.show()
+
+
+
+
 X, Y = load_aladip()
 
-lag = 1
-print('Done Loading')
+a = ObservableTicaObject()
+tics = a.fit_transform(X,Y)
+plot_all_obs_cmap(tics[:, 0], tics[:, 1], Y)
 
-mol = ObservableTicaObject(lag=lag)
-print("Object loaded")
-
-print("fitting data")
-print('Data dimensions: ', (len(X), len(X[0]), len(X[0][0])))
-r = math.floor(len(X[0][0])/10)
-
-mol.fit(X, Y)
-X_trans = mol.transform()[:, 0:3]
-# plot_by_traj(X, X_trans[:, 0], X_trans[:, 1])
-
-
-# # print(np.amin(X_trans[:,0]), np.amax(X_trans[:, 0]))
-# # print(np.amin(X_trans[:,1]), np.amax(X_trans[:, 1]))
-# # print(np.amin(X_trans[:,2]), np.amax(X_trans[:, 2]))
 #
+# lag = 1
+# print('Done Loading')
 #
-# ax = plt.subplot(111)
-# # plt.scatter(X_trans[:,0], X_trans[:,1], c=range(len(X_trans[:, 0])), cmap=cm.GnBu, s=0.3, alpha=0.5)
-# plt.scatter(X_trans[:,0], X_trans[:,1], s=0.3, alpha=0.5)
+# mol = ObservableTicaObject(lag=lag)
+# print("Object loaded")
 #
-# plt.xlabel('observable tIC 0')
-# plt.ylabel('observable tIC 1')
-# ax.spines['right'].set_visible(False)
-# ax.spines['top'].set_visible(False)
-# plt.xticks([-2,0,2])
-# plt.yticks([-3,0,3])
-# plt.title('projection onto first two observable tICs')
-# # plt.savefig('met_projection_onto_2d.png', dpi=300)
+# print("fitting data")
+# print('Data dimensions: ', (len(X), len(X[0]), len(X[0][0])))
+# r = math.floor(len(X[0][0])/10)
 #
+# mol.fit(X, Y)
+# X_trans = mol.transform()[:, 0:3]
 #
-# fig = plt.figure()
-# ax = fig.add_subplot(111, projection='3d')
+# # plot_by_traj(X, X_trans[:, 0], X_trans[:, 1])
+# plot_all(X_trans[:,0],X_trans[:,1])
+# plot_3d(X_trans[:,0], X_trans[:,1], X_trans[:2])
 #
-# ax.scatter(X_trans[:,0], X_trans[:,1], X_trans[:, 2], c=range(len(X_trans[:,0])), s=.2, cmap=cm.tab10, alpha=1)
-#
-# ax.set_xlabel('observable tIC0')
-# ax.set_ylabel('observable tIC1')
-# ax.set_zlabel('observable tIC2')
 #
 # plt.show()
+
+# print('hi')
 #
-#
-# # print('opening files')
-# # f = open('tica_coords.txt', 'w+')
-# #
-# # for i in range(len(X_trans)):
-# #     f.write(str(X_trans[i]))
-# #     if i % 500 == 0:
-# #         print('line ', i, ' of ', len(mol.x_0))
-# #
-# # print('Done writing X_Trans')
-# #
-# # f.close()
-# #
-# # print('done')
+# filepath = '/Users/bren/desktop/msk/sonya-traj/run0-clone0.h5'
+# trajs = md.load(filepath)
+# print(type(trajs))
+# print(trajs.xyz, len(trajs), len(trajs[0]))
