@@ -63,6 +63,12 @@ class ObservableTicaObject:
         self.epsilon = epsilon
 
     def printall(self):
+        """
+        Output:
+        -------
+        No formal return, just prints out most of the attributes for an instance of an ObservableTicaObject
+
+        """
         print('______________________________ \n self.x: \n', self.x)
         print('______________________________ \n self.y: \n', self.y)
 
@@ -131,10 +137,14 @@ class ObservableTicaObject:
         self.estimate_koop_xy(self.x_0, self.y_tau)
 
         print('Solving Riccati')
-        self.riccati()
+        o = self.riccati()
+        print(o.shape)
 
         print('Performing SVD')
         self.trunc_SVD(self.O)
+
+        # print(np.linalg.eigh(o)[1][-1].shape)
+        print (np.corrcoef(np.linalg.eigh(self.O)[1][-1], self.u[0]))
 
         # CHECK SHAPE OF KXX KXY AND O
         # TRUNCATED SHAPE OF V,S,U
@@ -205,13 +215,14 @@ class ObservableTicaObject:
 
     def transform(self):
         self.x_transformed = np.dot(self.x_0, self.u)
-        return self.x_transformed[:, self.n_components]
+        return self.x_transformed
         # CHECK SHAPE
         # CHECK COMPARISON BETWEEN THIS AND TICA ON X AND TICA ON Y
 
     def fit_transform(self, x,y):
         self.fit(x,y)
         return self.transform()
+
 
 
 def load_aladip():
