@@ -2,18 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ef3a0a42-b740-4294-b780-b7a34cd55443" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/noteboooks/.ipynb_checkpoints/Obs-tica-additional_ones-tinker-checkpoint.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/noteboooks/.ipynb_checkpoints/code-plotting-trajectories-checkpoint.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/noteboooks/.ipynb_checkpoints/nglview-tinker-checkpoint.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/noteboooks/.ipynb_checkpoints/obs_tica-tica-correlation-and-dihedral-plots-checkpoint.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/noteboooks/.ipynb_checkpoints/obs_tica-tica-data-hstack-checkpoint.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/noteboooks/.ipynb_checkpoints/reg-tica-comparison-checkpoint.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/noteboooks/.ipynb_checkpoints/sonya-data-load-tinker-checkpoint.ipynb" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/noteboooks/.ipynb_checkpoints/obs-tica-frank-analysis-checkpoint.ipynb" afterPath="$PROJECT_DIR$/noteboooks/.ipynb_checkpoints/obs-tica-frank-analysis-checkpoint.ipynb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/noteboooks/obs-tica-frank-analysis.ipynb" afterPath="$PROJECT_DIR$/noteboooks/obs-tica-frank-analysis.ipynb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tica-class/class_obs_tica.py" afterPath="$PROJECT_DIR$/tica-class/class_obs_tica.py" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/tica-class/obs-tica-frank-analysis.ipynb" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tica-class/class_plots.py" afterPath="$PROJECT_DIR$/tica-class/class_plots.py" />
     </list>
     <ignored path="observable-tica.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -40,11 +30,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="class_plots.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="class_plots.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tica-class/class_plots.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="848">
-              <caret line="53" column="24" selection-start-line="53" selection-start-column="24" selection-end-line="53" selection-end-column="24" />
+            <state relative-caret-position="842">
+              <caret line="142" column="24" selection-start-line="142" selection-start-column="24" selection-end-line="142" selection-end-column="24" />
               <folding>
                 <element signature="e#0#47#0" expanded="true" />
               </folding>
@@ -52,7 +42,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="class_obs_tica.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="class_obs_tica.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tica-class/class_obs_tica.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="682">
@@ -107,8 +97,8 @@
         <option value="$PROJECT_DIR$/tica-class/class-code/class_obs_tica.py" />
         <option value="$PROJECT_DIR$/tica-class/class-tests/class_tests.py" />
         <option value="$PROJECT_DIR$/tica-class/class_tests.py" />
-        <option value="$PROJECT_DIR$/tica-class/class_plots.py" />
         <option value="$PROJECT_DIR$/tica-class/class_obs_tica.py" />
+        <option value="$PROJECT_DIR$/tica-class/class_plots.py" />
       </list>
     </option>
   </component>
@@ -719,16 +709,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tica-class/class_plots.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="848">
-          <caret line="53" column="24" selection-start-line="53" selection-start-column="24" selection-end-line="53" selection-end-column="24" />
-          <folding>
-            <element signature="e#0#47#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///Applications/anaconda/envs/py3.6/lib/python3.6/site-packages/numpy/lib/function_base.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="79536">
@@ -762,6 +742,16 @@
             <element signature="e#9611#10056#0" expanded="false" />
             <element signature="e#10079#10547#0" expanded="false" />
             <element signature="e#10571#10731#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tica-class/class_plots.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="842">
+          <caret line="142" column="24" selection-start-line="142" selection-start-column="24" selection-end-line="142" selection-end-column="24" />
+          <folding>
+            <element signature="e#0#47#0" expanded="true" />
           </folding>
         </state>
       </provider>

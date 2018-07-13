@@ -108,37 +108,37 @@ def plot_3d(x,y,z, save=False):
 
 
 
+if __name__ == '__main__':
+    X, Y = load_aladip()
 
-X, Y = load_aladip()
+    a = ObservableTicaObject()
+    tics = a.fit_transform(X,Y)
+    plot_all_obs_cmap(tics[:, 0], tics[:, 1], Y)
 
-a = ObservableTicaObject()
-tics = a.fit_transform(X,Y)
-plot_all_obs_cmap(tics[:, 0], tics[:, 1], Y)
+    #
+    # lag = 1
+    # print('Done Loading')
+    #
+    # mol = ObservableTicaObject(lag=lag)
+    # print("Object loaded")
+    #
+    # print("fitting data")
+    # print('Data dimensions: ', (len(X), len(X[0]), len(X[0][0])))
+    # r = math.floor(len(X[0][0])/10)
+    #
+    # mol.fit(X, Y)
+    # X_trans = mol.transform()[:, 0:3]
+    #
+    # # plot_by_traj(X, X_trans[:, 0], X_trans[:, 1])
+    # plot_all(X_trans[:,0],X_trans[:,1])
+    # plot_3d(X_trans[:,0], X_trans[:,1], X_trans[:2])
+    #
+    #
+    # plt.show()
 
-#
-# lag = 1
-# print('Done Loading')
-#
-# mol = ObservableTicaObject(lag=lag)
-# print("Object loaded")
-#
-# print("fitting data")
-# print('Data dimensions: ', (len(X), len(X[0]), len(X[0][0])))
-# r = math.floor(len(X[0][0])/10)
-#
-# mol.fit(X, Y)
-# X_trans = mol.transform()[:, 0:3]
-#
-# # plot_by_traj(X, X_trans[:, 0], X_trans[:, 1])
-# plot_all(X_trans[:,0],X_trans[:,1])
-# plot_3d(X_trans[:,0], X_trans[:,1], X_trans[:2])
-#
-#
-# plt.show()
-
-# print('hi')
-#
-# filepath = '/Users/bren/desktop/msk/sonya-traj/run0-clone0.h5'
-# trajs = md.load(filepath)
-# print(type(trajs))
-# print(trajs.xyz, len(trajs), len(trajs[0]))
+    # print('hi')
+    #
+    # filepath = '/Users/bren/desktop/msk/sonya-traj/run0-clone0.h5'
+    # trajs = md.load(filepath)
+    # print(type(trajs))
+    # print(trajs.xyz, len(trajs), len(trajs[0]))
