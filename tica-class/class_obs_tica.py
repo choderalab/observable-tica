@@ -296,7 +296,7 @@ def load_met():
 
 
 def load_ddr1():
-
+    # TODO: THIS IS NOT COMPLETE
     filepath = '/Users/bren/desktop/msk/sonya-traj/run0-clone0.h5'
     trajs = md.load(filepath)
     print(type(trajs))
