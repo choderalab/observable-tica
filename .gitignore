@@ -1,5 +1,9 @@
-.DS_store
+.DS_Store
 .idea
 *.pyc
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
+.AppleDouble
+.LSOverride
+__pycache__/
+*.py[cod]
