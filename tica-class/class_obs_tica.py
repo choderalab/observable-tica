@@ -36,6 +36,8 @@ class ObservableTicaObject:
         self.x_tau = None
 
         self.x_to_project = None
+        self.x_flattened = None
+        self.x_augmented = None
 
         self.y_obj = None
         self.y_whitened = None
@@ -123,6 +125,7 @@ class ObservableTicaObject:
         self.x_obj = decomposition.PCA(whiten=True, n_components=self.var)
         self.y_obj = decomposition.PCA(whiten=True, n_components=self.var)
 
+        self.x_flattened = np.vstack(x)
         print('X dims: ', (len(self.x), len(self.x[0]), len(self.x[0][0])))
         print('Y dims: ', (len(self.y), len(self.y[0]), len(self.y[0][0])))
 
@@ -142,13 +145,13 @@ class ObservableTicaObject:
         self.y_obj.fit(np.vstack(self.y))
 
         print('Whitening Data')
-        self.whiten()
+        self.whiten_augment()  # replaced whiten() and a few following lines with this new function
 
         print('Estimating Koopman Matrices')
-        self.x_0 = np.insert(self.x_0, len(self.x_0[0]), 1, axis=1)
-        self.x_tau = np.insert(self.x_tau, len(self.x_tau[0]), 1, axis=1)
-        self.x_to_project = np.insert(np.vstack(self.x_whitened), len(self.x_whitened[0][0]), 1, axis=1)
-        self.y_tau = np.insert(self.y_tau, len(self.y_tau[0]), 1, axis=1)
+        # self.x_0 = np.insert(self.x_0, len(self.x_0[0]), 1, axis=1)
+        # self.x_tau = np.insert(self.x_tau, len(self.x_tau[0]), 1, axis=1)
+        # self.x_to_project = np.insert(np.vstack(self.x_whitened), len(self.x_whitened[0][0]), 1, axis=1)
+        # self.y_tau = np.insert(self.y_tau, len(self.y_tau[0]), 1, axis=1)
         self.estimate_koop_xx(self.x_0, self.x_tau)
         self.estimate_koop_xy(self.x_0, self.y_tau)
 
@@ -183,6 +186,27 @@ class ObservableTicaObject:
 
         # ASSERT MEANLESS AND COV = I
         # RUN THE TEST ON SELF.X_WHITENED AND NOT X_0 X_T, SAME FOR Y_WHITENED
+
+        return rtn
+
+    def whiten_augment(self):
+        rtn = []
+        self.x_whitened = [self.x_obj.transform(mat) for mat in self.x]
+        self.x_0 = np.vstack([x[: -self.lag] for x in self.x_whitened])
+        self.x_tau = np.vstack([x[self.lag:] for x in self.x_whitened])
+        rtn.append((self.x_0, self.x_tau))
+
+        self.y_whitened = [self.y_obj.transform(traj) for traj in self.y]
+        self.y_0 = np.vstack(y[: -self.lag] for y in self.y_whitened)
+        self.y_tau = np.vstack(y[self.lag:] for y in self.y_whitened)
+        rtn.append((self.y_0, self.y_tau))
+
+        self.x_0 = np.insert(self.x_0, len(self.x_0[0]), 1, axis=1)
+        self.x_tau = np.insert(self.x_tau, len(self.x_tau[0]), 1, axis=1)
+        self.x_to_project = np.insert(np.vstack(self.x_whitened), len(self.x_whitened[0][0]), 1, axis=1)
+        self.y_tau = np.insert(self.y_tau, len(self.y_tau[0]), 1, axis=1)
+
+        self.x_augmented = [np.column_stack((traj, np.ones(len(traj)))) for traj in self.x_whitened]
 
         return rtn
 
@@ -236,6 +260,7 @@ class ObservableTicaObject:
     def fit_transform(self, x, y):
         self.fit(x,y)
         return self.transform()[:, range(self.n_components)]
+
 
 
 def reduce_dimension_size(data, n_dims=500):  # this is messy code :(

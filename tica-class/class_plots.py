@@ -106,7 +106,21 @@ def plot_3d(x,y,z, save=False):
         ax.savefig('projection_onto_3d.png', dpi=300)
     plt.show()
 
+def clustering(x,y):
+    return
 
+def sample(traj, clusters, n_samples):
+    """
+    Returns a list of lists of trajs, the first dimension is the cluster, the second dim is the traj of the sample
+    """
+    rtn = []
+    for cluster in clusters:
+        cluster_samples = []
+        samples = np.random.randint(0, len(cluster)-1, n_samples)
+        for i in samples:
+            cluster_samples.append(traj[i])
+        rtn.append(cluster_samples)
+    return rtn
 
 if __name__ == '__main__':
     X, Y = load_aladip()
