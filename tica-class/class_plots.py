@@ -96,7 +96,7 @@ def plot_3d(x,y,z, save=False):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
-    ax.scatter(x, y, z, c=range(len(X_trans[:, 0])), s=.2, cmap=cm.viridis,
+    ax.scatter(x, y, z, c=range(len(x)), s=.2, cmap=cm.viridis,
                alpha=.5)
 
     ax.set_xlabel('observable tIC0')
