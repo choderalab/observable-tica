@@ -20,7 +20,7 @@ class ObservableTicaObject:
         Minimum amount of variance that you want to be explained by a chosen number of components (for sklearn.decomposition.PCA)
 
     """
-    def __init__(self, lag=1, epsilon=.0001, n_components=3, var=.97):
+    def __init__(self, lag=1, epsilon=.0001, n_components=2, var=.97):
         self.lag = lag
         self.n_components = n_components
         self.var = var
@@ -64,6 +64,9 @@ class ObservableTicaObject:
         self.v = None
 
         self.x_transformed = None
+
+        self.projection_feat_cov = None
+        self.projection_feat_corr = None
 
         self.epsilon = epsilon
 
@@ -253,6 +256,8 @@ class ObservableTicaObject:
 
     def transform(self):
         self.x_transformed = np.dot(np.vstack(self.x_to_project), self.u)
+        print(self.x_to_project.shape)
+        print(self.x_transformed.shape)
         return self.x_transformed
         # CHECK SHAPE
         # CHECK COMPARISON BETWEEN THIS AND TICA ON X AND TICA ON Y
@@ -261,11 +266,34 @@ class ObservableTicaObject:
         self.fit(x,y)
         return self.transform()[:, range(self.n_components)]
 
+    def get_correlation(self, data, component=0):
+        """
+        Parameters:
+        ------------
+        Data: should be either your X's or Y's, can be a list of transformed traj data or flattened
+
+        Performs covariance calculations on the (n by n_components+d) matrix [projections|x features]
+        Returns a n_components+d vector with the covariances between the x features and the projections onto the tics
+        """
+        aug = np.column_stack((self.x_transformed[:, component], np.vstack(data)))
+
+        obj = decomposition.PCA()
+
+        obj.fit(aug)
+        self.projection_feat_cov = obj.get_covariance().copy()
+        variances = np.diagonal(self.projection_feat_cov)**.5
+        self.projection_feat_corr = obj.get_covariance().copy()
+        for i in range(len(self.projection_feat_corr)):
+            for j in range(len(self.projection_feat_corr[0])):
+                self.projection_feat_corr[i][j] = self.projection_feat_corr[i][j]/(variances[i]*variances[j])
+        return self.projection_feat_corr[0]
 
 
 def reduce_dimension_size(data, n_dims=500):  # this is messy code :(
     rand_dims = np.random.choice(len(data[0][0]), (n_dims), replace=False)
     a = np.array([traj[:, rand_dims] for traj in data])
+    print(a)
+
     return a
 
 

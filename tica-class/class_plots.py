@@ -127,7 +127,10 @@ if __name__ == '__main__':
 
     a = ObservableTicaObject()
     tics = a.fit_transform(X,Y)
-    plot_all_obs_cmap(tics[:, 0], tics[:, 1], Y)
+    # plot_all_obs_cmap(tics[:, 0], tics[:, 1], Y)
+
+    cov = a.get_covariance()
+    print(cov)
 
     #
     # lag = 1
