@@ -96,7 +96,7 @@ def plot_3d(x,y,z, save=False):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
-    ax.scatter(x, y, z, c=range(len(X_trans[:, 0])), s=.2, cmap=cm.viridis,
+    ax.scatter(x, y, z, c=range(len(x)), s=.2, cmap=cm.viridis,
                alpha=.5)
 
     ax.set_xlabel('observable tIC0')
@@ -106,39 +106,56 @@ def plot_3d(x,y,z, save=False):
         ax.savefig('projection_onto_3d.png', dpi=300)
     plt.show()
 
+def clustering(x,y):
+    return
 
+def sample(traj, clusters, n_samples):
+    """
+    Returns a list of lists of trajs, the first dimension is the cluster, the second dim is the traj of the sample
+    """
+    rtn = []
+    for cluster in clusters:
+        cluster_samples = []
+        samples = np.random.randint(0, len(cluster)-1, n_samples)
+        for i in samples:
+            cluster_samples.append(traj[i])
+        rtn.append(cluster_samples)
+    return rtn
 
+if __name__ == '__main__':
+    X, Y = load_aladip()
 
-X, Y = load_aladip()
+    a = ObservableTicaObject()
+    tics = a.fit_transform(X,Y)
+    # plot_all_obs_cmap(tics[:, 0], tics[:, 1], Y)
 
-a = ObservableTicaObject()
-tics = a.fit_transform(X,Y)
-plot_all_obs_cmap(tics[:, 0], tics[:, 1], Y)
+    cov = a.get_covariance()
+    print(cov)
 
-#
-# lag = 1
-# print('Done Loading')
-#
-# mol = ObservableTicaObject(lag=lag)
-# print("Object loaded")
-#
-# print("fitting data")
-# print('Data dimensions: ', (len(X), len(X[0]), len(X[0][0])))
-# r = math.floor(len(X[0][0])/10)
-#
-# mol.fit(X, Y)
-# X_trans = mol.transform()[:, 0:3]
-#
-# # plot_by_traj(X, X_trans[:, 0], X_trans[:, 1])
-# plot_all(X_trans[:,0],X_trans[:,1])
-# plot_3d(X_trans[:,0], X_trans[:,1], X_trans[:2])
-#
-#
-# plt.show()
+    #
+    # lag = 1
+    # print('Done Loading')
+    #
+    # mol = ObservableTicaObject(lag=lag)
+    # print("Object loaded")
+    #
+    # print("fitting data")
+    # print('Data dimensions: ', (len(X), len(X[0]), len(X[0][0])))
+    # r = math.floor(len(X[0][0])/10)
+    #
+    # mol.fit(X, Y)
+    # X_trans = mol.transform()[:, 0:3]
+    #
+    # # plot_by_traj(X, X_trans[:, 0], X_trans[:, 1])
+    # plot_all(X_trans[:,0],X_trans[:,1])
+    # plot_3d(X_trans[:,0], X_trans[:,1], X_trans[:2])
+    #
+    #
+    # plt.show()
 
-# print('hi')
-#
-# filepath = '/Users/bren/desktop/msk/sonya-traj/run0-clone0.h5'
-# trajs = md.load(filepath)
-# print(type(trajs))
-# print(trajs.xyz, len(trajs), len(trajs[0]))
+    # print('hi')
+    #
+    # filepath = '/Users/bren/desktop/msk/sonya-traj/run0-clone0.h5'
+    # trajs = md.load(filepath)
+    # print(type(trajs))
+    # print(trajs.xyz, len(trajs), len(trajs[0]))

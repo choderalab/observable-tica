@@ -20,7 +20,7 @@ class ObservableTicaObject:
         Minimum amount of variance that you want to be explained by a chosen number of components (for sklearn.decomposition.PCA)
 
     """
-    def __init__(self, lag=1, epsilon=.0001, n_components=3, var=.97):
+    def __init__(self, lag=1, epsilon=.0001, n_components=2, var=.97):
         self.lag = lag
         self.n_components = n_components
         self.var = var
@@ -36,6 +36,8 @@ class ObservableTicaObject:
         self.x_tau = None
 
         self.x_to_project = None
+        self.x_flattened = None
+        self.x_augmented = None
 
         self.y_obj = None
         self.y_whitened = None
@@ -62,6 +64,9 @@ class ObservableTicaObject:
         self.v = None
 
         self.x_transformed = None
+
+        self.projection_feat_cov = None
+        self.projection_feat_corr = None
 
         self.epsilon = epsilon
 
@@ -123,6 +128,7 @@ class ObservableTicaObject:
         self.x_obj = decomposition.PCA(whiten=True, n_components=self.var)
         self.y_obj = decomposition.PCA(whiten=True, n_components=self.var)
 
+        self.x_flattened = np.vstack(x)
         print('X dims: ', (len(self.x), len(self.x[0]), len(self.x[0][0])))
         print('Y dims: ', (len(self.y), len(self.y[0]), len(self.y[0][0])))
 
@@ -142,13 +148,13 @@ class ObservableTicaObject:
         self.y_obj.fit(np.vstack(self.y))
 
         print('Whitening Data')
-        self.whiten()
+        self.whiten_augment()  # replaced whiten() and a few following lines with this new function
 
         print('Estimating Koopman Matrices')
-        self.x_0 = np.insert(self.x_0, len(self.x_0[0]), 1, axis=1)
-        self.x_tau = np.insert(self.x_tau, len(self.x_tau[0]), 1, axis=1)
-        self.x_to_project = np.insert(np.vstack(self.x_whitened), len(self.x_whitened[0][0]), 1, axis=1)
-        self.y_tau = np.insert(self.y_tau, len(self.y_tau[0]), 1, axis=1)
+        # self.x_0 = np.insert(self.x_0, len(self.x_0[0]), 1, axis=1)
+        # self.x_tau = np.insert(self.x_tau, len(self.x_tau[0]), 1, axis=1)
+        # self.x_to_project = np.insert(np.vstack(self.x_whitened), len(self.x_whitened[0][0]), 1, axis=1)
+        # self.y_tau = np.insert(self.y_tau, len(self.y_tau[0]), 1, axis=1)
         self.estimate_koop_xx(self.x_0, self.x_tau)
         self.estimate_koop_xy(self.x_0, self.y_tau)
 
@@ -183,6 +189,27 @@ class ObservableTicaObject:
 
         # ASSERT MEANLESS AND COV = I
         # RUN THE TEST ON SELF.X_WHITENED AND NOT X_0 X_T, SAME FOR Y_WHITENED
+
+        return rtn
+
+    def whiten_augment(self):
+        rtn = []
+        self.x_whitened = [self.x_obj.transform(mat) for mat in self.x]
+        self.x_0 = np.vstack([x[: -self.lag] for x in self.x_whitened])
+        self.x_tau = np.vstack([x[self.lag:] for x in self.x_whitened])
+        rtn.append((self.x_0, self.x_tau))
+
+        self.y_whitened = [self.y_obj.transform(traj) for traj in self.y]
+        self.y_0 = np.vstack(y[: -self.lag] for y in self.y_whitened)
+        self.y_tau = np.vstack(y[self.lag:] for y in self.y_whitened)
+        rtn.append((self.y_0, self.y_tau))
+
+        self.x_0 = np.insert(self.x_0, len(self.x_0[0]), 1, axis=1)
+        self.x_tau = np.insert(self.x_tau, len(self.x_tau[0]), 1, axis=1)
+        self.x_to_project = np.insert(np.vstack(self.x_whitened), len(self.x_whitened[0][0]), 1, axis=1)
+        self.y_tau = np.insert(self.y_tau, len(self.y_tau[0]), 1, axis=1)
+
+        self.x_augmented = [np.column_stack((traj, np.ones(len(traj)))) for traj in self.x_whitened]
 
         return rtn
 
@@ -229,6 +256,8 @@ class ObservableTicaObject:
 
     def transform(self):
         self.x_transformed = np.dot(np.vstack(self.x_to_project), self.u)
+        print(self.x_to_project.shape)
+        print(self.x_transformed.shape)
         return self.x_transformed
         # CHECK SHAPE
         # CHECK COMPARISON BETWEEN THIS AND TICA ON X AND TICA ON Y
@@ -237,10 +266,34 @@ class ObservableTicaObject:
         self.fit(x,y)
         return self.transform()[:, range(self.n_components)]
 
+    def get_correlation(self, data, component=0):
+        """
+        Parameters:
+        ------------
+        Data: should be either your X's or Y's, can be a list of transformed traj data or flattened
+
+        Performs covariance calculations on the (n by n_components+d) matrix [projections|x features]
+        Returns a n_components+d vector with the covariances between the x features and the projections onto the tics
+        """
+        aug = np.column_stack((self.x_transformed[:, component], np.vstack(data)))
+
+        obj = decomposition.PCA()
+
+        obj.fit(aug)
+        self.projection_feat_cov = obj.get_covariance().copy()
+        variances = np.diagonal(self.projection_feat_cov)**.5
+        self.projection_feat_corr = obj.get_covariance().copy()
+        for i in range(len(self.projection_feat_corr)):
+            for j in range(len(self.projection_feat_corr[0])):
+                self.projection_feat_corr[i][j] = self.projection_feat_corr[i][j]/(variances[i]*variances[j])
+        return self.projection_feat_corr[0]
+
 
 def reduce_dimension_size(data, n_dims=500):  # this is messy code :(
     rand_dims = np.random.choice(len(data[0][0]), (n_dims), replace=False)
     a = np.array([traj[:, rand_dims] for traj in data])
+    print(a)
+
     return a
 
 
